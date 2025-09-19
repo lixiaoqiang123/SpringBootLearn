@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiro认证系统 - CORS测试页面</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn.logout {
+            background-color: #dc3545;
+        }
+        .btn.logout:hover {
+            background-color: #c82333;
+        }
+        .btn.info {
+            background-color: #28a745;
+        }
+        .btn.info:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #495057;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Shiro认证系统 - CORS测试</h1>
+
+        <!-- 注册部分 -->
+        <div class="section">
+            <h2>📝 用户注册</h2>
+            <div class="form-group">
+                <label>用户名:</label>
+                <input type="text" id="registerUsername" placeholder="请输入用户名（2-50个字符）" />
+            </div>
+            <div class="form-group">
+                <label>密码:</label>
+                <input type="password" id="registerPassword" placeholder="请输入密码（至少6个字符）" />
+            </div>
+            <div class="form-group">
+                <label>确认密码:</label>
+                <input type="password" id="confirmPassword" placeholder="再次输入密码" />
+            </div>
+            <button class="btn" onclick="register()">注册</button>
+        </div>
+
+        <!-- 登录部分 -->
+        <div class="section">
+            <h2>🔑 用户登录</h2>
+            <div class="form-group">
+                <label>用户名:</label>
+                <input type="text" id="loginUsername" placeholder="请输入用户名" />
+            </div>
+            <div class="form-group">
+                <label>密码:</label>
+                <input type="password" id="loginPassword" placeholder="请输入密码" />
+            </div>
+            <button class="btn" onclick="login()">登录</button>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="section">
+            <h2>🔧 其他操作</h2>
+            <button class="btn logout" onclick="logout()">登出</button>
+            <button class="btn info" onclick="getUserInfo()">获取用户信息</button>
+            <button class="btn info" onclick="testProtected()">测试受保护接口</button>
+            <button class="btn info" onclick="testAdmin()">测试管理员接口</button>
+        </div>
+
+        <!-- 结果显示 -->
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/shiro';
+
+        // 显示结果
+        function showResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = JSON.stringify(data, null, 2);
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        // 显示信息
+        function showInfo(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'result info';
+        }
+
+        // 统一的 fetch 配置
+        function fetchWithCredentials(url, options = {}) {
+            return fetch(url, {
+                ...options,
+                credentials: 'include', // 重要：携带跨域 Cookie
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+        }
+
+        // 用户注册
+        async function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!username || !password || !confirmPassword) {
+                showResult({ error: '请填写所有字段' }, true);
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showResult({ error: '两次输入的密码不一致' }, true);
+                return;
+            }
+
+            try {
+                showInfo('正在注册...');
+                const response = await fetchWithCredentials(`${API_BASE}/register`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password, confirmPassword })
+                });
+
+                const data = await response.json();
+                showResult(data, !data.success);
+
+                if (data.success) {
+                    // 清空注册表单
+                    document.getElementById('registerUsername').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                }
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message,
+                    solution: '请确保后端已启动并配置了CORS'
+                }, true);
+            }
+        }
+
+        // 用户登录
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showResult({ error: '请填写用户名和密码' }, true);
+                return;
+            }
+
+            try {
+                showInfo('正在登录...');
+                const response = await fetchWithCredentials(`${API_BASE}/login`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                showResult(data, !data.success);
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message,
+                    solution: '请确保后端已启动并配置了CORS'
+                }, true);
+            }
+        }
+
+        // 用户登出
+        async function logout() {
+            try {
+                showInfo('正在登出...');
+                const response = await fetchWithCredentials(`${API_BASE}/logout`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                showResult(data, !data.success);
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message
+                }, true);
+            }
+        }
+
+        // 获取用户信息
+        async function getUserInfo() {
+            try {
+                showInfo('正在获取用户信息...');
+                const response = await fetchWithCredentials(`${API_BASE}/user-info`);
+
+                const data = await response.json();
+                showResult(data, !data.success);
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message
+                }, true);
+            }
+        }
+
+        // 测试受保护接口
+        async function testProtected() {
+            try {
+                showInfo('正在测试受保护接口...');
+                const response = await fetchWithCredentials(`${API_BASE}/protected`);
+
+                const data = await response.json();
+                showResult(data, !data.success);
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message
+                }, true);
+            }
+        }
+
+        // 测试管理员接口
+        async function testAdmin() {
+            try {
+                showInfo('正在测试管理员接口...');
+                const response = await fetchWithCredentials(`${API_BASE}/admin`);
+
+                const data = await response.json();
+                showResult(data, !data.success);
+            } catch (error) {
+                showResult({
+                    error: 'CORS错误或网络错误',
+                    details: error.message
+                }, true);
+            }
+        }
+
+        // 页面加载时的提示
+        window.onload = function() {
+            showInfo('页面已加载完成。\n\n使用说明：\n1. 首先注册一个新用户\n2. 使用注册的用户登录\n3. 测试各种接口功能\n\n如果出现CORS错误，请确保后端服务已启动。');
+        };
+    </script>
+</body>
+</html>

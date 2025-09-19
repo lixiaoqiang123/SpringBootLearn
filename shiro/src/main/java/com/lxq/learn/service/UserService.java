@@ -212,4 +212,81 @@ public class UserService {
             return new String[]{"user:read"};
         }
     }
+
+    /**
+     * 用户注册方法
+     * 专门用于用户注册，包含完整的验证逻辑
+     *
+     * @param username 用户名
+     * @param password 原始密码
+     * @return 注册结果信息
+     */
+    public RegisterResult registerUser(String username, String password) {
+        try {
+            // 1. 验证用户名格式
+            if (username == null || username.trim().isEmpty()) {
+                return new RegisterResult(false, "用户名不能为空");
+            }
+
+            if (username.length() < 2 || username.length() > 50) {
+                return new RegisterResult(false, "用户名长度必须在2-50个字符之间");
+            }
+
+            // 2. 验证密码格式
+            if (password == null || password.trim().isEmpty()) {
+                return new RegisterResult(false, "密码不能为空");
+            }
+
+            if (password.length() < 6) {
+                return new RegisterResult(false, "密码长度至少6个字符");
+            }
+
+            // 3. 检查用户名是否已存在
+            if (userRepository.existsByUsername(username.trim())) {
+                return new RegisterResult(false, "用户名已存在，请选择其他用户名");
+            }
+
+            // 4. 创建用户（自动加密密码）
+            User user = createUser(username.trim(), password, true);
+
+            return new RegisterResult(true, "注册成功", user.getUsername());
+
+        } catch (Exception e) {
+            System.err.println("用户注册失败：" + e.getMessage());
+            return new RegisterResult(false, "注册过程中发生错误，请稍后重试");
+        }
+    }
+
+    /**
+     * 注册结果封装类
+     */
+    public static class RegisterResult {
+        private final boolean success;
+        private final String message;
+        private final String username;
+
+        public RegisterResult(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+            this.username = null;
+        }
+
+        public RegisterResult(boolean success, String message, String username) {
+            this.success = success;
+            this.message = message;
+            this.username = username;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+    }
 }

@@ -3,12 +3,11 @@ package com.lxq.learn.config;
 import jakarta.annotation.PostConstruct;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,18 +20,42 @@ import org.springframework.context.annotation.Configuration;
 public class ShiroBean {
 
     /**
+     * 配置Web Session管理器
+     * 确保Shiro Session与Web环境兼容，支持Cookie传递
+     * @return DefaultWebSessionManager
+     */
+    @Bean
+    public DefaultWebSessionManager sessionManager() {
+        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+
+        // 启用Session ID Cookie
+        sessionManager.setSessionIdCookieEnabled(true);
+
+        // 禁用URL重写（避免URL中出现sessionId）
+        sessionManager.setSessionIdUrlRewritingEnabled(false);
+
+        // 设置Session超时时间（30分钟）
+        sessionManager.setGlobalSessionTimeout(1800000L);
+
+        System.out.println("配置Shiro Web Session管理器");
+        return sessionManager;
+    }
+
+    /**
      * 配置 SecurityManager（核心安全管理器）
-     * 在 Spring Boot 3.x 中需要显式配置以确保正确初始化
-     * 自动化配置都在spring-boot-starter中，因为javax迁移到jakarta生态，shiro-spring-boot-starter并不能与springboot3相兼容，
-     * 只能采用单独引入依赖jakarta模块，然后再手动进行创建securitymanager用于spring容器管理
+     * 使用DefaultWebSecurityManager支持Web环境的Session管理
      * @param userRealm 用户认证授权 Realm
+     * @param sessionManager Session管理器
      * @return SecurityManager 实例
      */
     @Bean
-    public SecurityManager securityManager(UserRealm userRealm) {
-        DefaultSecurityManager securityManager = new DefaultSecurityManager();
+    public SecurityManager securityManager(UserRealm userRealm, DefaultWebSessionManager sessionManager) {
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(userRealm);
+        securityManager.setSessionManager(sessionManager);  // 关键：设置Session管理器
         SecurityUtils.setSecurityManager(securityManager);
+
+        System.out.println("配置Shiro Web SecurityManager，集成Session管理器");
         return securityManager;
     }
 
@@ -96,9 +119,10 @@ public class ShiroBean {
         // perms：需要指定权限才能访问
         // roles：需要指定角色才能访问
 
-        // 登录接口允许匿名访问
+        // 登录和注册接口允许匿名访问
         chainDefinition.addPathDefinition("/shiro/login", "anon");
-        chainDefinition.addPathDefinition("/shiro/logout", "anon");
+        chainDefinition.addPathDefinition("/shiro/register", "anon");
+        chainDefinition.addPathDefinition("/shiro/logout", "authc");
 
         // 测试接口允许匿名访问（用于测试登录前的访问）
         chainDefinition.addPathDefinition("/shiro/public", "anon");
