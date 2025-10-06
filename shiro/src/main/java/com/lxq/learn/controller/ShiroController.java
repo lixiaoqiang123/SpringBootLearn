@@ -18,7 +18,7 @@ import java.util.Map;
  * 提供登录、注册、登出和测试接口
  */
 @RestController
-@RequestMapping("/shiro")
+@RequestMapping("")
 public class ShiroController {
 
     @Autowired

@@ -2,7 +2,7 @@
 server:
   port: 23333
   servlet:
-    context-path: /
+    context-path: /shiro
 
 # Spring 框架配置
 spring:
