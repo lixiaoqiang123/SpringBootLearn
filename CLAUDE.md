@@ -98,3 +98,4 @@ ShiroController提供了完整的认证测试接口：
 - 遵循现有的包结构: `com.lxq.learn`
 - 配置类统一放在config包下
 - 控制器类统一放在controller包下
+- 以后不需要验证修复效果，告诉我完成即可

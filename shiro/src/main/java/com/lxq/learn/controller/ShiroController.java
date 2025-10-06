@@ -3,6 +3,7 @@ package com.lxq.learn.controller;
 import com.lxq.learn.service.UserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +80,8 @@ public class ShiroController {
 
             // 执行登录
             subject.login(token);
+
+            subject.getSession();
 
             // 登录成功，Shiro会自动管理Session
             result.put("success", true);
