@@ -81,8 +81,6 @@ public class ShiroController {
             // 执行登录
             subject.login(token);
 
-            subject.getSession();
-
             // 登录成功，Shiro会自动管理Session
             result.put("success", true);
             result.put("message", "登录成功");

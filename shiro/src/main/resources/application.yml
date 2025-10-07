@@ -28,7 +28,9 @@ spring:
       idle-timeout: 600000
       # 连接最大生存时间（毫秒）
       max-lifetime: 1800000
-
+  main:
+    allow-bean-definition-overriding:
+      true
   # JPA 配置
   jpa:
     # 数据库方言
@@ -57,27 +59,6 @@ spring:
   # 应用名称
   application:
     name: shiro-mysql-demo
-
-  # Spring Session配置（替代Shiro Session管理）
-#  session:
-#    # Session存储方式: none(内存), redis, mongodb, jdbc等
-#    store-type: none  # 开发环境使用内存，生产环境建议使用redis
-#    # Session超时时间（秒）
-#    timeout: 1800  # 30分钟
-#    # Cookie配置
-#    cookie:
-#      # Cookie名称
-#      name: JSESSIONID
-#      # Cookie路径
-#      path: /
-#      # 跨域Cookie设置（SameSite属性）
-#      same-site: none  # 允许跨域携带Cookie
-#      # HTTPS环境设为true，HTTP环境设为false
-#      secure: false
-#      # 允许JavaScript访问Cookie（便于前端获取sessionId）
-#      http-only: false
-#      # Cookie最大存活时间（-1表示会话级别）
-#      max-age: -1
 
 # 日志配置
 logging:

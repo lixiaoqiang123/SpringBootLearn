@@ -3,6 +3,7 @@ package com.lxq.learn.config;
 import jakarta.annotation.PostConstruct;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.authz.Authorizer;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
@@ -10,6 +11,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Shiro 配置类
@@ -41,18 +43,18 @@ public class ShiroBean {
         return sessionManager;
     }
 
+
     /**
      * 配置 SecurityManager（核心安全管理器）
      * 使用DefaultWebSecurityManager支持Web环境的Session管理
      * @param userRealm 用户认证授权 Realm
-     * @param sessionManager Session管理器
      * @return SecurityManager 实例
      */
-    @Bean
-    public SecurityManager securityManager(UserRealm userRealm, DefaultWebSessionManager sessionManager) {
+    @Primary
+    @Bean(name = {"authorizer","authenticator"})
+    public SecurityManager securityManager(UserRealm userRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(userRealm);
-        securityManager.setSessionManager(sessionManager);  // 关键：设置Session管理器
         SecurityUtils.setSecurityManager(securityManager);
 
         System.out.println("配置Shiro Web SecurityManager，集成Session管理器");

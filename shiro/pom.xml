@@ -12,39 +12,48 @@
 
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.shiro</groupId>-->
-<!--            <artifactId>shiro-spring-boot-starter</artifactId>-->
-<!--            <version>2.0.5</version>-->
-<!--        </dependency>-->
-        <!-- Shiro Spring 核心依赖 - 专为 Spring Boot 3.x (Jakarta EE) 优化 -->
+        <!-- Shiro -->
         <dependency>
             <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-spring</artifactId>
+            <artifactId>shiro-spring-boot-starter</artifactId>
             <classifier>jakarta</classifier>
+            <version>2.0.5</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>shiro-web</artifactId>
                     <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-crypto-cipher</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-crypto-hash</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-spring</artifactId>
                 </exclusion>
             </exclusions>
-            <version>2.0.5</version>
         </dependency>
-
-        <!-- Shiro Core - Jakarta 版本 -->
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-core</artifactId>
-            <classifier>jakarta</classifier>
-            <version>2.0.5</version>
-        </dependency>
-
-        <!-- Shiro Web - Jakarta 版本 -->
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-web</artifactId>
             <classifier>jakarta</classifier>
             <version>2.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-spring</artifactId>
+            <classifier>jakarta</classifier>
+            <version>2.0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
